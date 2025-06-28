@@ -1,265 +1,203 @@
-# 🛡️ Enhanced GenAI Insurance Advisor
+# GenAI Insurance Advisor
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.28+-red.svg)](https://streamlit.io)
 [![Mistral AI](https://img.shields.io/badge/AI-Mistral-orange.svg)](https://mistral.ai)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-An AI-powered insurance advisory platform that leverages the Mistral AI model to provide personalized insurance recommendations for Indian government schemes and private insurance options.
+AI-powered insurance recommendation platform leveraging Mistral LLM to provide personalized insurance advice for Indian government schemes and private insurance options.
 
-## 🎯 Project Description
+## Project Overview
 
-The Enhanced GenAI Insurance Advisor is a comprehensive web application designed to democratize insurance knowledge and help users make informed decisions about insurance coverage. Built specifically for the Indian market, it focuses on government-sponsored programs like PMSBY, PMJJBY, PMJAY, and Atal Pension Yojana, making insurance accessible to rural and urban populations alike.
+The GenAI Insurance Advisor is designed to democratize insurance knowledge in India by providing intelligent, personalized recommendations through advanced AI. The platform specializes in government-sponsored programs like PMSBY, PMJJBY, PMJAY, and Atal Pension Yojana, making insurance accessible to both rural and urban populations.
 
-### 🌟 Key Highlights
+## Features
 
-- **🤖 Mistral AI Integration**: Advanced AI model provides intelligent, personalized insurance recommendations
-- **🇮🇳 India-Focused**: Specialized knowledge of Indian insurance schemes and government programs
-- **💰 Cost-Effective**: Helps users find coverage starting from just ₹20/year
-- **⚡ Performance Optimized**: Cached responses, efficient loading, and optimized user experience
-- **🌐 Accessible**: Simple interface designed for users across all literacy levels
+### Main AI Advisor
+- Personalized insurance recommendations using Mistral AI
+- Profile analysis based on age, income, location, family size, and health status
+- Specialized knowledge of Indian government insurance schemes
+- Smart fallback system with rule-based recommendations when AI is unavailable
+- Direct integration with official application portals and bank locators
 
-## ✨ Features
+### Premium Calculator
+- Interactive cost estimation across multiple insurance schemes
+- Real-time calculation of total premiums and coverage amounts
+- Comparison between government schemes and private insurance options
+- Coverage optimization based on budget constraints
+- Support for government schemes (PMSBY, PMJJBY, APY) and private add-ons
 
-### 🏠 Main Advisor
-- **Personalized AI Recommendations**: Mistral AI analyzes user profile (age, income, family size, health status) to suggest optimal insurance schemes
-- **Government Scheme Focus**: Specialized recommendations for PMSBY, PMJJBY, PMJAY, and APY
-- **Smart Fallback**: Works even without AI connectivity using intelligent rule-based recommendations
-- **Action-Oriented Results**: Direct links to application portals and nearby bank locations
+### Claim Assistant
+- AI-powered troubleshooting for insurance claim issues
+- Step-by-step guidance for PMSBY, PMJJBY, and PMJAY claims
+- Document requirement checklists and submission procedures
+- Official contact information and helpline numbers
+- Common claim scenarios and resolution strategies
 
-### 💰 Premium Calculator
-- **Interactive Cost Planning**: Calculate total insurance costs across multiple schemes
-- **Government + Private Mix**: Compare costs for government schemes vs private insurance options
-- **Real-time Updates**: Instant calculation of total premiums and coverage amounts
-- **Coverage Estimation**: Shows total protection value for selected schemes
+### Insurance Chatbot
+- Real-time question answering about insurance policies
+- Context-aware responses specific to Indian insurance market
+- Persistent chat history for reference during sessions
+- Fallback responses using cached knowledge base
+- Support for scheme-specific queries and application guidance
 
-### 🤝 Claim Assistant
-- **AI-Powered Support**: Mistral AI helps troubleshoot claim issues and provides step-by-step guidance
-- **Scheme-Specific Help**: Specialized assistance for PMSBY, PMJJBY, PMJAY claims
-- **Document Guidance**: Clear instructions on required documents and procedures
-- **Contact Information**: Relevant helpline numbers and official websites
+### Personal Dashboard
+- Visual overview of user insurance profile and recommendations
+- Quick access to suggested schemes and their current status
+- Coverage gap analysis and improvement suggestions
+- Personalized action items and next steps
+- Portfolio tracking and optimization recommendations
 
-### 💬 Insurance Chatbot
-- **Real-time Q&A**: Instant answers to insurance-related questions
-- **Contextual Responses**: AI understands Indian insurance context and provides relevant answers
-- **Chat History**: Maintains conversation history for reference
-- **Fallback Knowledge**: Works with cached responses when AI is unavailable
+## Technology Stack
 
-### 📊 Personal Dashboard
-- **Profile Overview**: Visual summary of user's insurance profile
-- **Recommendation Tracking**: Quick view of suggested schemes and their status
-- **Coverage Analysis**: Overview of current and recommended coverage levels
+- **Frontend Framework**: Streamlit with custom theming
+- **AI Model**: Mistral AI deployed via Ollama
+- **Programming Language**: Python 3.8+
+- **Performance Optimization**: Advanced caching system, async operations
+- **Data Processing**: Efficient session management and state handling
 
-## 🚀 Technology Stack
+## Installation and Setup
 
-- **Frontend**: Streamlit (Interactive Web UI)
-- **AI Model**: Mistral AI (via Ollama)
-- **Language**: Python 3.8+
-- **Caching**: Streamlit's built-in caching system
-- **Performance**: Optimized with async operations and efficient data handling
-
-## 📋 Prerequisites
-
+### Prerequisites
 - Python 3.8 or higher
-- Internet connection (for AI features)
-- 4GB+ RAM recommended for optimal performance
+- 4GB+ RAM (recommended for optimal AI performance)
+- Internet connection for AI features and external integrations
 
-## 🛠️ Installation & Setup
+### Local Development Setup
 
-### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/yourusername/enhanced-genai-insurance-advisor.git
-cd enhanced-genai-insurance-advisor
-```
+# Clone the repository
+git clone https://github.com/yourusername/genai-insurance-advisor.git
+cd genai-insurance-advisor
 
-### Step 2: Create Virtual Environment
-```bash
+# Create and activate virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
+source venv/bin/activate  # Windows: venv\Scripts\activate
 
-### Step 3: Install Dependencies
-```bash
-pip install streamlit ollama
-```
+# Install required dependencies
+pip install -r requirements.txt
 
-### Step 4: Setup Ollama and Mistral
-```bash
-# Install Ollama (visit https://ollama.ai for platform-specific instructions)
-# For Linux/macOS:
-curl -fsSL https://ollama.ai/install.sh | sh
+# Install and setup Ollama
+# Visit https://ollama.ai for platform-specific installation instructions
 
-# Pull Mistral model
+# Download Mistral model
 ollama pull mistral
-```
 
-### Step 5: Run the Application
-```bash
+# Run the application
 streamlit run app.py
 ```
 
-The application will be available at `http://localhost:8501`
-
-## 🎮 Usage Guide
-
-### Getting Started
-1. **Launch the App**: Open your browser and navigate to the Streamlit URL
-2. **Fill Your Profile**: Enter your age, occupation, income, location, and other details
-3. **Get AI Recommendations**: Click "Get Mistral AI Insurance Advice" for personalized suggestions
-4. **Explore Features**: Use the tabs to access premium calculator, claim help, and chatbot
-
-### Using Different Features
-
-#### Main Advisor
-- Fill out the comprehensive form with your personal details
-- Receive AI-powered recommendations tailored to your profile
-- Get direct links to apply for recommended schemes
-
-#### Premium Calculator
-- Select government and private insurance schemes
-- Adjust coverage amounts using sliders
-- See real-time cost calculations and total coverage
-
-#### Claim Assistant
-- Choose your claim type from the dropdown
-- Describe your specific issue
-- Get AI-powered troubleshooting steps and contact information
-
-#### Chatbot
-- Ask any insurance-related question
-- Get instant AI-powered responses
-- Access your chat history for reference
-
-## 🏗️ Project Structure
-
+### Requirements File
 ```
-enhanced-genai-insurance-advisor/
-│
-├── app.py                 # Main Streamlit application
-├── README.md             # Project documentation
-├── requirements.txt      # Python dependencies
-├── .gitignore           # Git ignore file
-└── docs/                # Additional documentation
-    ├── setup_guide.md   # Detailed setup instructions
-    └── user_manual.md   # Comprehensive user guide
+streamlit>=1.28.0
+ollama>=0.1.7
 ```
 
-## 🔧 Configuration
-
-### AI Model Settings
-The application uses optimized settings for Mistral AI:
-- **Temperature**: 0.3-0.5 (balanced creativity and accuracy)
-- **Max Tokens**: 150-300 (efficient response length)
-- **Context Window**: 1024-2048 (adequate context understanding)
-
-### Caching Strategy
-- **Static Data**: Cached indefinitely (occupations, income brackets)
-- **AI Responses**: Cached for 30 minutes
-- **Fallback Advice**: Cached for 1 hour
-- **Claim Help**: Cached for 3 hours
-
-## 🎯 Target Audience
-
-### Primary Users
-- **Rural Population**: Farmers, laborers, small business owners seeking affordable insurance
-- **Urban Middle Class**: Employees looking for comprehensive family coverage
-- **Senior Citizens**: Retirees needing health and pension planning
-- **Young Professionals**: Starting their insurance journey with government schemes
-
-### Use Cases
-- **First-time Insurance Buyers**: Guidance on essential coverage
-- **Claim Support**: Help with claim processes and documentation
-- **Cost Optimization**: Finding the right balance of coverage and affordability
-- **Government Scheme Navigation**: Understanding eligibility and applications
-
-## 🚀 Performance Optimizations
-
-- **Lazy Loading**: Components load only when needed
-- **Response Caching**: AI responses cached to reduce API calls
-- **Session Management**: Efficient state management for faster interactions
-- **Fallback Systems**: App works even when AI is unavailable
-- **Optimized Prompts**: Tailored prompts for better AI responses
-
-## 🤝 Contributing
-
-We welcome contributions! Here's how you can help:
-
-1. **Fork the Repository**
-2. **Create a Feature Branch**: `git checkout -b feature/new-feature`
-3. **Make Changes**: Implement your improvements
-4. **Test Thoroughly**: Ensure all features work correctly
-5. **Submit Pull Request**: Describe your changes clearly
-
-### Contribution Areas
-- 🐛 Bug fixes and performance improvements
-- 🚀 New insurance schemes integration
-- 🌐 Multi-language support
-- 📱 Mobile responsiveness enhancements
-- 🧪 Testing and quality assurance
-
-## 📊 Insurance Schemes Covered
+## Supported Insurance Schemes
 
 ### Government Schemes
-| Scheme | Premium | Coverage | Target Group |
-|--------|---------|----------|--------------|
-| **PMSBY** | ₹20/year | ₹2 Lakh accident | All ages |
-| **PMJJBY** | ₹436/year | ₹2 Lakh life | 18-50 years |
-| **PMJAY** | Free | ₹5 Lakh health | Eligible families |
-| **APY** | ₹42-291/month | ₹1-5K pension | 18-40 years |
+| Scheme | Annual Premium | Coverage | Eligibility | Target Group |
+|--------|---------------|----------|-------------|--------------|
+| PMSBY | ₹20 | ₹2 Lakh accident protection | All bank account holders | Universal accident coverage |
+| PMJJBY | ₹436 | ₹2 Lakh life insurance | Ages 18-50 with bank account | Family financial security |
+| PMJAY | Free | ₹5 Lakh health coverage | Income-based eligibility | Eligible families below poverty line |
+| APY | ₹42-₹291/month | ₹1,000-₹5,000 monthly pension | Ages 18-40 | Retirement planning |
 
-### Additional Coverage
-- Health insurance top-ups
-- Term life insurance
-- State-specific schemes
-- Private insurance options
+### Additional Coverage Options
+- Health insurance top-up plans
+- Term life insurance policies
+- State-specific insurance schemes
+- Private insurance alternatives and comparisons
 
-## 🔒 Privacy & Security
+## How It Works
 
-- **No Data Storage**: User data is not permanently stored
-- **Session-Based**: Information cleared after session ends
-- **Local Processing**: AI processing happens locally when possible
-- **Secure Connections**: All external links use HTTPS
+### User Journey
+1. **Profile Creation**: Users input demographic and financial information including age, occupation, income, location, family size, and health status
+2. **AI Analysis**: Mistral AI processes the profile data and generates personalized recommendations
+3. **Recommendation Display**: System presents tailored insurance schemes with detailed explanations and cost breakdowns
+4. **Interactive Tools**: Users can explore premium calculator, claim assistance, and chatbot features
+5. **Action Planning**: Direct links to application portals and implementation guidance
 
-## 🚧 Known Limitations
+### AI Integration
+The platform uses Mistral AI with optimized prompts specifically designed for Indian insurance advisory. The system includes intelligent caching to improve response times and reduce API calls while maintaining high-quality recommendations.
 
-- **AI Dependency**: Full features require Ollama and Mistral setup
-- **Internet Required**: AI features need internet connectivity
-- **India-Specific**: Primarily designed for Indian insurance market
-- **Resource Intensive**: Mistral AI requires adequate system resources
+## Performance Optimizations
 
-## 🔮 Future Enhancements
+- **Caching Strategy**: Static data cached indefinitely, AI responses cached for 30 minutes, fallback advice cached for 1 hour
+- **Lazy Loading**: Components load only when accessed to improve initial load times
+- **Session Management**: Efficient state handling to maintain user context across interactions
+- **Fallback Systems**: Complete functionality maintained even when AI services are unavailable
+- **Response Optimization**: Streamlined prompts and response formatting for faster processing
 
-- [ ] **Multi-language Support**: Hindi, Tamil, Telugu, and other regional languages
-- [ ] **Mobile App**: Native mobile application for better accessibility
-- [ ] **Advanced Analytics**: Insurance portfolio analysis and optimization
-- [ ] **Integration APIs**: Direct integration with insurance providers
-- [ ] **Document Upload**: AI-powered document analysis for claims
-- [ ] **Video Guidance**: Interactive video tutorials for scheme applications
+## Deployment
 
-## 📄 License
+### Streamlit Cloud Deployment
+1. Push your code to GitHub repository
+2. Connect to Streamlit Cloud at share.streamlit.io
+3. Deploy directly from your GitHub repository
+4. Configure environment variables if needed
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+### Local Hosting
+The application runs on localhost:8501 by default and can be configured for network access through Streamlit configuration.
+
+## Project Structure
+
+```
+genai-insurance-advisor/
+├── app.py                    # Main Streamlit application
+├── requirements.txt          # Python dependencies
+├── README.md                # Project documentation
+├── .gitignore               # Git ignore rules
+├── .streamlit/              
+│   └── config.toml          # Streamlit configuration
+└── LICENSE                  # MIT license file
+```
+
+## Troubleshooting
+
+### Common Issues
+- **Ollama not found**: Ensure Ollama is properly installed and running
+- **Mistral model unavailable**: Run `ollama pull mistral` to download the model
+- **Slow performance**: Check system resources and consider caching optimization
+- **Connection errors**: Verify internet connectivity for AI features
+
+### Fallback Mode
+The application includes comprehensive fallback functionality that provides intelligent recommendations even when AI services are unavailable, ensuring consistent user experience.
+
+## Contributing
+
+We welcome contributions to improve the platform. Please follow these guidelines:
+
+1. Fork the repository and create a feature branch
+2. Implement your changes with appropriate testing
+3. Ensure code quality and documentation standards
+4. Submit a pull request with detailed description of changes
+5. Participate in code review process
+
+### Areas for Contribution
+- Additional insurance scheme integrations
+- Multi-language support implementation
+- Performance optimization improvements
+- User interface and experience enhancements
+- Testing and quality assurance
+
+## License
+
+This project is licensed under the MIT License. See the LICENSE file for complete terms and conditions.
 
 ## Acknowledgments
 
-- **Mistral AI**: For providing the powerful language model
-- **Ollama**: For local AI model deployment
-- **Streamlit**: For the amazing web app framework
-- **Government of India**: For insurance schemes data and information
-- **Insurance Regulatory and Development Authority of India (IRDAI)**: For guidelines and standards
+- Mistral AI for providing the advanced language model capabilities
+- Ollama for local AI model deployment infrastructure
+- Streamlit for the comprehensive web application framework
+- Government of India for insurance scheme information and accessibility
+- Insurance Regulatory and Development Authority of India (IRDAI) for guidelines
 
-## Support & Contact
+## Support and Contact
 
-- **Issues**: Please report bugs and issues in the GitHub Issues section
-- **Discussions**: Join our GitHub Discussions for questions and feature requests
-- **Email**: [your-email@domain.com] for direct support
+For issues, questions, or contributions:
+- Create an issue in the GitHub repository
+- Review the troubleshooting section for common problems
+- Check Ollama and Streamlit documentation for technical details
 
-## 🌟 Star the Repository
-
-If you find this project helpful, please consider giving it a star ⭐ on GitHub!
-
----
-
-**Made with ❤️ for the Indian insurance community**
-
-*Empowering financial security through AI-driven insurance guidance*
+**Built for the Indian insurance community - Making insurance accessible through AI**
