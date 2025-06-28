@@ -1,0 +1,37 @@
+﻿# Python
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+.env
+.venv/
+pip-log.txt
+.tox/
+.coverage
+.cache
+*.log
+.git
+.mypy_cache
+.pytest_cache
+.hypothesis
+.streamlit/
+
+# Model files
+*.bin
+*.gguf
+models/
+.ollama/
+
+# Node.js
+node_modules/
+
+# System files
+.DS_Store
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
