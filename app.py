@@ -583,9 +583,15 @@ Keep brief, actionable advice only."""
                     
                 except Exception as e:
                     st.error(f"phi3:mini AI Error: {e}")
-                    show_generic_claim_help(claim_type)
+                    # Use fallback AI
+                    fallback_response = get_free_ai_response(f"Claim help for {claim_type}: {issue_description}")
+                    st.info("🤖 Fallback AI Response:")
+                    st.write(fallback_response)
             else:
-                show_generic_claim_help(claim_type)
+                # Use fallback AI when Ollama is not available
+                fallback_response = get_free_ai_response(f"Claim help for {claim_type}: {issue_description}")
+                st.info("🤖 AI Response:")
+                st.write(fallback_response)
 
 @st.cache_data(ttl=1800)
 def get_simple_answer(question):
@@ -602,9 +608,10 @@ def get_simple_answer(question):
         return "For detailed information, visit your nearest bank branch or check the official government insurance websites."
 
 def insurance_chatbot():
-    """Optimized insurance Q&A chatbot with phi3:mini"""
-    st.subheader("💬 Insurance Chatbot (Powered by phi3:mini - Lightning Fast!)")
+    """Optimized insurance Q&A chatbot with phi3:mini (lightning fast)"""
+    st.subheader("💬 Insurance Chatbot")
     
+    # Show recent chat history
     recent_chats = st.session_state.chat_history[-5:] if len(st.session_state.chat_history) > 5 else st.session_state.chat_history
     
     for chat in recent_chats:
@@ -612,7 +619,8 @@ def insurance_chatbot():
         st.write(f"**Bot:** {chat['answer']}")
         st.write("---")
     
-        user_question = st.text_input("Ask any insurance question:", 
+    # Input for new question - FIXED INDENTATION
+    user_question = st.text_input("Ask any insurance question:", 
                                 placeholder="e.g., How to apply for PMJAY? What documents needed for PMSBY?")
     
     if st.button("Ask Bot") and user_question:
@@ -640,16 +648,19 @@ Give brief, practical answer in 2-3 lines. Focus on actionable steps."""
                 answer = response['message']['content']
                 
             except Exception as e:
-                answer = "I'm having trouble connecting to phi3:mini AI. Please try again or contact your nearest bank for insurance guidance."
+                answer = f"I'm having trouble connecting to phi3:mini AI. Please try again or contact your nearest bank for insurance guidance. phi3:mini AI Error: Failed to connect to Ollama. Please check that Ollama is downloaded, running and accessible. https://ollama.com/download"
         else:
-            answer = get_simple_answer(user_question.lower())
+            # Use fallback to Hugging Face API
+            answer = get_free_ai_response(user_question)
         
+        # Add to chat history
         st.session_state.chat_history.append({
             'question': user_question,
             'answer': answer,
             'timestamp': datetime.now().strftime("%H:%M")
         })
         
+        # Keep only last 10 chats
         if len(st.session_state.chat_history) > 10:
             st.session_state.chat_history = st.session_state.chat_history[-10:]
         
@@ -777,7 +788,7 @@ def get_simple_answer(question):
 
 def insurance_chatbot():
     """Optimized insurance Q&A chatbot with phi3:mini (lightning fast)"""
-    st.subheader("💬 Insurance Chatbot (Powered by phi3:mini - Lightning Fast!)")
+    st.subheader("💬 Insurance Chatbot")
     
     recent_chats = st.session_state.chat_history[-5:] if len(st.session_state.chat_history) > 5 else st.session_state.chat_history
     
