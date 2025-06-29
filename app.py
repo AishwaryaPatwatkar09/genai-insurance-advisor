@@ -1,35 +1,160 @@
-# ==============================================
-# Enhanced GenAI Insurance Advisor - phi3:mini Version (Fast)
-# ==============================================
-
 import streamlit as st
 import time
 import json
 from datetime import datetime
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter, A4
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 import io
-
 import os
-# Disable Ollama in cloud environment
-OLLAMA_AVAILABLE = False
+import requests
 
-# Try to import ollama, with fallback
+st.set_page_config(
+    page_title="GenAI Insurance Advisor", 
+    page_icon="🛡️", 
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
+
 try:
     import ollama
     OLLAMA_AVAILABLE = True
 except ImportError:
     OLLAMA_AVAILABLE = False
-    st.warning("⚠️ Ollama not installed. Install with: pip install ollama")
 
-# ----------------------- 
-# 1. PERFORMANCE OPTIMIZATIONS
-# ----------------------- 
+def get_free_ai_response(prompt, max_retries=3):
+    """Use Hugging Face's free inference API"""
+    
+    models = [
+        "microsoft/DialoGPT-large",
+        "facebook/blenderbot-400M-distill",
+        "microsoft/DialoGPT-medium"
+    ]
+    
+    for model in models:
+        for attempt in range(max_retries):
+            try:
+                API_URL = f"https://api-inference.huggingface.co/models/{model}"
+                
+                # Check if API key exists
+                api_key = ""
+                try:
+                    api_key = st.secrets.get('HUGGINGFACE_API_KEY', '')
+                except:
+                    pass
+                
+                headers = {
+                    "Authorization": f"Bearer {api_key}"
+                } if api_key else {}
+                
+                formatted_prompt = f"Insurance Expert: {prompt}\nResponse:"
+                
+                payload = {
+                    "inputs": formatted_prompt,
+                    "parameters": {
+                        "max_length": 200,
+                        "temperature": 0.7,
+                        "do_sample": True
+                    }
+                }
+                
+                response = requests.post(API_URL, headers=headers, json=payload, timeout=30)
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    if isinstance(result, list) and len(result) > 0:
+                        if 'generated_text' in result[0]:
+                            text = result[0]['generated_text']
+                            if "Response:" in text:
+                                text = text.split("Response:")[-1].strip()
+                            return text
+                elif response.status_code == 503:
+                    break
+                    
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    continue
+                
+    return get_knowledge_based_response(prompt)
+
+def get_knowledge_based_response(prompt):
+    """Fallback knowledge-based responses"""
+    prompt_lower = prompt.lower()
+    
+    if any(word in prompt_lower for word in ['claim', 'file', 'document']):
+        return """To file an insurance claim:
+        
+1. **Report immediately** - Contact your insurer within 24-48 hours
+2. **Gather documents** - Policy number, incident details, photos, receipts
+3. **Fill forms accurately** - Complete all claim forms truthfully
+4. **Submit promptly** - Don't delay submission
+5. **Follow up** - Keep track of your claim status
+6. **Keep records** - Maintain copies of all communications
+
+Most claims are processed within 7-15 business days if all documents are complete."""
+
+    elif any(word in prompt_lower for word in ['advice', 'recommend', 'choose', 'best']):
+        return """Microinsurance Guidance:
+
+**Health Insurance:**
+- Covers medical emergencies and hospitalization
+- Look for cashless facility at nearby hospitals
+- Check waiting periods for pre-existing conditions
+
+**Life Insurance:**
+- Provides financial security to your family
+- Term insurance offers maximum coverage at low cost
+- Consider your family's monthly expenses × 120 months
+
+**General Tips:**
+- Start with basic health coverage
+- Pay premiums on time to avoid policy lapse
+- Understand exclusions and waiting periods
+- Keep all policy documents safe
+- Review coverage annually"""
+
+    elif any(word in prompt_lower for word in ['premium', 'cost', 'payment', 'afford']):
+        return """Managing Insurance Costs:
+
+**Reduce Premiums:**
+- Buy policies when young and healthy
+- Choose higher deductibles if you can afford them
+- Look for group insurance through employers
+- Compare quotes from multiple insurers
+
+**Payment Tips:**
+- Set up automatic payments to avoid lapses
+- Pay annually instead of monthly to save on fees
+- Use digital payment methods for convenience
+- Keep payment receipts for tax benefits
+
+**Budget Planning:**
+- Allocate 10-15% of income for insurance
+- Prioritize health insurance first
+- Build emergency fund alongside insurance"""
+
+    else:
+        return """I'm here to help with your insurance questions! 
+
+**I can assist with:**
+- Choosing the right insurance policy
+- Understanding claim procedures
+- Comparing different insurance options
+- Managing premium payments
+- Understanding policy terms and conditions
+
+**Popular Topics:**
+- Health insurance coverage
+- Life insurance planning
+- Claim filing process
+- Premium calculation
+- Policy renewal procedures
+
+Feel free to ask specific questions about any insurance topic!"""
+# 1. TRANSLATIONS AND CONFIGURATIONS
 TRANSLATIONS = {
     'en': {
         'title': '🛡️ GenAI MicroInsurance Advisor',
@@ -105,7 +230,6 @@ TRANSLATIONS = {
     }
 }
 
-# Also translate the dropdown options
 TRANSLATED_OPTIONS = {
     'en': {
         'occupations': ["Farmer", "Driver", "Teacher", "Shopkeeper", "Labor Worker", "Government Employee", "Self Employed", "Private Employee", "Student", "Retired", "Other"],
@@ -122,7 +246,12 @@ TRANSLATED_OPTIONS = {
         'risk_levels': ["रूढ़िवादी", "मध्यम", "आक्रामक"]
     }
 }
-# Cache configuration and static data
+
+LANGUAGES = {
+    'en': '🇺🇸 English',
+    'hi': '🇮🇳 हिंदी'
+}
+# 2. CONFIGURATION FUNCTIONS 
 @st.cache_data
 def get_static_config():
     """Cache static configuration data with language support"""
@@ -153,8 +282,36 @@ def get_static_config():
             "Other Government Scheme"
         ]
     }
-# Cache expensive computations
-@st.cache_data(ttl=3600)  # Cache for 1 hour
+
+def init_session_state():
+    """Initialize session state efficiently"""
+    defaults = {
+        'advice_generated': False,
+        'user_data': {},
+        'advice_content': "",
+        'processing': False,
+        'chat_history': [],
+        'premium_calculator': False,
+        'claim_assistant': False,
+        'selected_language': 'en'
+    }
+    
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+def clear_language_cache():
+    """Clear cached data when language changes"""
+    try:
+        st.cache_data.clear()
+    except:
+        pass
+
+def get_text(key, lang='en'):
+    """Get translated text"""
+    return TRANSLATIONS.get(lang, {}).get(key, TRANSLATIONS['en'].get(key, key))
+# 3. AI FUNCTIONS
+@st.cache_data(ttl=1800)
 def get_cached_fallback_advice(age, job, income, location):
     """Cache fallback advice to avoid regeneration"""
     return f"""
@@ -192,45 +349,7 @@ def get_cached_fallback_advice(age, job, income, location):
 **Your Total Protection Cost: ₹456/year for complete family coverage!**
 """
 
-# ----------------------- 
-# 2. Configuration
-# ----------------------- 
-st.set_page_config(
-    page_title="GenAI Insurance Advisor", 
-    page_icon="🛡️", 
-    layout="wide",
-    initial_sidebar_state="collapsed"  # Start with collapsed sidebar for speed
-)
-
-# Optimized session state initialization
-def init_session_state():
-    """Initialize session state efficiently"""
-    defaults = {
-        'advice_generated': False,
-        'user_data': {},
-        'advice_content': "",
-        'processing': False,
-        'chat_history': [],
-        'premium_calculator': False,
-        'claim_assistant': False
-    }
-    
-    for key, value in defaults.items():
-        if key not in st.session_state:
-            st.session_state[key] = value
-
-init_session_state()
-
-def clear_language_cache():
-    """Clear cached data when language changes"""
-    if hasattr(st, 'legacy_caching'):
-        st.legacy_caching.clear_cache()
-    else:
-        st.cache_data.clear()
-# ----------------------- 
-# 3. Optimized GenAI Integration with phi3:mini (FAST)
-# ----------------------- 
-@st.cache_data(ttl=1800)  # Cache AI responses for 30 minutes
+@st.cache_data(ttl=1800)
 def get_cached_genai_advice(age, job, income, location, family_size, health_condition, financial_goal):
     """Cache AI advice to avoid repeated API calls"""
     return get_genai_advice_internal(age, job, income, location, family_size, health_condition, financial_goal)
@@ -243,7 +362,6 @@ def get_genai_advice_internal(age, job, income, location, family_size, health_co
     if not OLLAMA_AVAILABLE:
         return get_cached_fallback_advice(age, job, income, location)
     
-    # Language-specific prompt
     if lang == 'hi':
         prompt = f"""भारत के लिए बीमा सलाहकार। हिंदी में सलाह चाहिए:
 
@@ -274,23 +392,21 @@ Recommend top 3 insurance schemes with:
 Focus on PMSBY, PMJJBY, PMJAY. Keep brief."""
 
     try:
-        # Use phi3:mini model with optimized settings for speed
         response = ollama.chat(
-            model='phi3:mini',  # Fast, lightweight model
+            model='phi3:mini',
             messages=[{'role': 'user', 'content': prompt}],
             stream=False,
             options={
                 'temperature': 0.7,
                 'top_p': 0.9,        
-                'max_tokens': 200,   # Reduced for faster response
-                'num_ctx': 1024,     # Smaller context for speed
-                'num_predict': 200   # Limit prediction for faster response
+                'max_tokens': 200,
+                'num_ctx': 1024,
+                'num_predict': 200
             }
         )
         
         ai_advice = response['message']['content']
         
-        # Enhanced response format optimized for phi3:mini output
         full_advice = f"""
 ## 🤖 AI Insurance Advisor Analysis (Powered by phi3:mini - Lightning Fast!)
 
@@ -341,11 +457,7 @@ Focus on PMSBY, PMJJBY, PMJAY. Keep brief."""
     except Exception as e:
         st.error(f"phi3:mini AI Error: {str(e)}. Using fallback recommendations...")
         return get_cached_fallback_advice(age, job, income, location)
-
-# ----------------------- 
-# 4. Optimized Features
-# ----------------------- 
-
+# 4. FEATURE FUNCTIONS
 def premium_calculator():
     """Optimized premium calculator with cached calculations"""
     st.subheader("💰 Premium Calculator")
@@ -374,7 +486,6 @@ def premium_calculator():
         if term_insurance:
             term_premium = st.slider("Term Premium (₹/month):", 300, 3000, 800)
     
-    # Optimized calculation
     total_annual = 0
     if pmsby: total_annual += 20
     if pmjjby: total_annual += 436
@@ -422,8 +533,13 @@ def get_cached_claim_help():
         """
     }
 
+def show_generic_claim_help(claim_type):
+    """Generic claim help when AI is not available"""
+    help_text = get_cached_claim_help()
+    st.info(help_text.get(claim_type, "Contact your insurance provider or bank for specific guidance."))
+
 def claim_assistant():
-    """Optimized claim assistant with phi3:mini (fast responses)"""
+    """Optimized claim assistant with phi3:mini"""
     st.subheader("🤝 Claim Assistant")
     
     config = get_static_config()
@@ -432,7 +548,7 @@ def claim_assistant():
     issue_description = st.text_area("Describe your issue:", 
                                    placeholder="e.g., Hospital denied cashless treatment, Claim rejected, Need help with documents")
     
-    if st.button("🤖 Get AI Help ") and issue_description:
+    if st.button("🤖 Get AI Help") and issue_description:
         with st.spinner("phi3:mini AI analyzing (5-10 seconds)..."):
             
             if OLLAMA_AVAILABLE:
@@ -451,14 +567,14 @@ Quick help needed:
 Keep brief, actionable advice only."""
 
                     response = ollama.chat(
-                        model='phi3:mini',  # Fast model
+                        model='phi3:mini',
                         messages=[{'role': 'user', 'content': prompt}],
                         stream=False,
                         options={
                             'temperature': 0.3,
                             'max_tokens': 150,
-                            'num_ctx': 512,     # Smaller for speed
-                            'num_predict': 150  # Limit for faster response
+                            'num_ctx': 512,
+                            'num_predict': 150
                         }
                     )
                     
@@ -471,34 +587,91 @@ Keep brief, actionable advice only."""
             else:
                 show_generic_claim_help(claim_type)
 
-def show_generic_claim_help(claim_type):
-    """Generic claim help when AI is not available"""
-    help_text = get_cached_claim_help()
-    st.info(help_text.get(claim_type, "Contact your insurance provider or bank for specific guidance."))
+@st.cache_data(ttl=1800)
+def get_simple_answer(question):
+    """Cache simple chatbot answers"""
+    if 'pmjay' in question or 'ayushman' in question:
+        return "PMJAY provides ₹5 lakh free health coverage. Check eligibility at pmjay.gov.in or call 14555."
+    elif 'pmsby' in question:
+        return "PMSBY costs ₹20/year for ₹2 lakh accident coverage. Apply at any bank with Aadhaar and account."
+    elif 'pmjjby' in question:
+        return "PMJJBY costs ₹436/year for ₹2 lakh life insurance. Available for 18-50 age group through banks."
+    elif 'document' in question:
+        return "Basic documents: Aadhaar card, bank account, mobile number. Specific schemes may need additional documents."
+    else:
+        return "For detailed information, visit your nearest bank branch or check the official government insurance websites."
 
-# ADD THESE FUNCTIONS AFTER show_generic_claim_help function
+def insurance_chatbot():
+    """Optimized insurance Q&A chatbot with phi3:mini"""
+    st.subheader("💬 Insurance Chatbot (Powered by phi3:mini - Lightning Fast!)")
+    
+    recent_chats = st.session_state.chat_history[-5:] if len(st.session_state.chat_history) > 5 else st.session_state.chat_history
+    
+    for chat in recent_chats:
+        st.write(f"**You:** {chat['question']}")
+        st.write(f"**Bot:** {chat['answer']}")
+        st.write("---")
+    
+        user_question = st.text_input("Ask any insurance question:", 
+                                placeholder="e.g., How to apply for PMJAY? What documents needed for PMSBY?")
+    
+    if st.button("Ask Bot") and user_question:
+        
+        if OLLAMA_AVAILABLE:
+            try:
+                prompt = f"""Insurance expert for India. Quick answer:
+
+Q: {user_question}
+
+Give brief, practical answer in 2-3 lines. Focus on actionable steps."""
+
+                response = ollama.chat(
+                    model='phi3:mini',
+                    messages=[{'role': 'user', 'content': prompt}],
+                    stream=False,
+                    options={
+                        'temperature': 0.3,
+                        'max_tokens': 100,
+                        'num_ctx': 512,
+                        'num_predict': 100
+                    }
+                )
+                
+                answer = response['message']['content']
+                
+            except Exception as e:
+                answer = "I'm having trouble connecting to phi3:mini AI. Please try again or contact your nearest bank for insurance guidance."
+        else:
+            answer = get_simple_answer(user_question.lower())
+        
+        st.session_state.chat_history.append({
+            'question': user_question,
+            'answer': answer,
+            'timestamp': datetime.now().strftime("%H:%M")
+        })
+        
+        if len(st.session_state.chat_history) > 10:
+            st.session_state.chat_history = st.session_state.chat_history[-10:]
+        
+        st.rerun()
 
 def generate_insurance_pdf(user_data, advice_content):
     """Generate PDF report of insurance recommendations"""
     buffer = io.BytesIO()
     
-    # Create PDF document
     doc = SimpleDocTemplate(buffer, pagesize=A4)
     styles = getSampleStyleSheet()
     story = []
     
-    # Title
     title = Paragraph("🛡️ Your Personalized Insurance Plan", styles['Title'])
     story.append(title)
     story.append(Spacer(1, 20))
     
-    # Generated date
     date_text = f"Generated on: {datetime.now().strftime('%B %d, %Y')}"
     date_para = Paragraph(date_text, styles['Normal'])
     story.append(date_para)
     story.append(Spacer(1, 20))
     
-    # User profile
     profile_title = Paragraph("Your Profile", styles['Heading2'])
     story.append(profile_title)
     
@@ -515,14 +688,11 @@ def generate_insurance_pdf(user_data, advice_content):
     story.append(profile_para)
     story.append(Spacer(1, 20))
     
-    # Recommendations
     rec_title = Paragraph("AI Recommendations", styles['Heading2'])
     story.append(rec_title)
     
-    # Clean up the advice content for PDF
     clean_advice = advice_content.replace('##', '').replace('**', '').replace('*', '')
     clean_advice = clean_advice.replace('✅', '✓').replace('🏥', 'Health').replace('💰', 'Money')
-    # Remove markdown links and make text PDF-friendly
     clean_advice = clean_advice.replace('[', '').replace(']', '').replace('(', '').replace(')', '')
     
     advice_para = Paragraph(clean_advice[:2000], styles['Normal'])  # Limit length
@@ -609,7 +779,6 @@ def insurance_chatbot():
     """Optimized insurance Q&A chatbot with phi3:mini (lightning fast)"""
     st.subheader("💬 Insurance Chatbot (Powered by phi3:mini - Lightning Fast!)")
     
-    # Display only last 5 chats for performance
     recent_chats = st.session_state.chat_history[-5:] if len(st.session_state.chat_history) > 5 else st.session_state.chat_history
     
     for chat in recent_chats:
@@ -617,11 +786,9 @@ def insurance_chatbot():
         st.write(f"**Bot:** {chat['answer']}")
         st.write("---")
     
-    # New question
     user_question = st.text_input("Ask any insurance question:", 
                                 placeholder="e.g., How to apply for PMJAY? What documents needed for PMSBY?")
-    
-    if st.button("Ask  Bot") and user_question:
+    if st.button("Ask Bot") and user_question:
         
         if OLLAMA_AVAILABLE:
             try:
@@ -648,22 +815,19 @@ Give brief, practical answer in 2-3 lines. Focus on actionable steps."""
             except Exception as e:
                 answer = "I'm having trouble connecting to phi3:mini AI. Please try again or contact your nearest bank for insurance guidance."
         else:
-            # Use cached simple responses
             answer = get_simple_answer(user_question.lower())
         
-        # Add to history and keep only last 10 for performance
         st.session_state.chat_history.append({
             'question': user_question,
             'answer': answer,
             'timestamp': datetime.now().strftime("%H:%M")
         })
         
-        # Keep only last 10 chats to prevent memory bloat
         if len(st.session_state.chat_history) > 10:
             st.session_state.chat_history = st.session_state.chat_history[-10:]
         
         st.rerun()
-        
+
 LANGUAGES = {
     'en': '🇺🇸 English',
     'hi': '🇮🇳 हिंदी'
@@ -672,17 +836,23 @@ LANGUAGES = {
 def get_text(key, lang='en'):
     """Get translated text"""
     return TRANSLATIONS.get(lang, {}).get(key, TRANSLATIONS['en'].get(key, key))
-# ----------------------- 
 # 5. Main Optimized Streamlit App
-# ----------------------- 
 def main():
-    # Get current language
-    lang = st.session_state.get('selected_language', 'en')
-    
-    # Language selector FIRST
-    col1, col2 = st.columns([4, 1])
+    if 'advice_generated' not in st.session_state:
+        st.session_state.advice_generated = False
+    if 'user_data' not in st.session_state:
+        st.session_state.user_data = {}
+    if 'advice_content' not in st.session_state:
+        st.session_state.advice_content = ""
+    if 'processing' not in st.session_state:
+        st.session_state.processing = False
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = []
+    if 'selected_language' not in st.session_state:
+        st.session_state.selected_language = 'en'
+        lang = st.session_state.get('selected_language', 'en')
+        col1, col2 = st.columns([4, 1])
     with col1:
-        # Translated title and subtitle
         st.markdown(f"# {get_text('title', lang)}")
         st.markdown(f"*{get_text('subtitle', lang)}*")
     with col2:
@@ -694,20 +864,16 @@ def main():
             index=list(LANGUAGES.keys()).index(st.session_state.get('selected_language', 'en'))
         )
         
-        # Update session state and rerun if language changed
         if selected_lang != st.session_state.get('selected_language', 'en'):
             st.session_state.selected_language = selected_lang
             clear_language_cache()  # Clear cache when language changes
             st.rerun()
-
-    
-    # Show AI status with translation
+            
     if OLLAMA_AVAILABLE:
         st.success(f"✅ {get_text('ai_ready', lang)}")
     else:
         st.warning("⚠️ Using Smart Recommendations (Install Ollama + phi3:mini for full AI features)")
     
-    # Enhanced metrics dashboard with translations
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
         st.metric(get_text('gov_schemes', lang), "10+", "Available")
@@ -716,11 +882,10 @@ def main():
     with col3:
         st.metric(get_text('max_coverage', lang), "₹5L", get_text('health_free', lang))
     with col4:
-        st.metric("AI Model", "phi3:mini", f"⚡ Fast" if OLLAMA_AVAILABLE else "Offline")
+        st.metric("AI Model", "phi3:mini", f"⚡ Online" if OLLAMA_AVAILABLE else "Offline")
     with col5:
-        st.metric(get_text('response_time', lang), "<10s", get_text('lightning', lang))
+        st.metric(get_text('response_time', lang), "<30s", get_text('Real-time', lang))
     
-    # Navigation tabs with translations
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
         f"🏠 {get_text('main_advisor', lang)}", 
         f"💰 {get_text('premium_calculator', lang)}", 
@@ -733,22 +898,15 @@ def main():
         lang = st.session_state.get('selected_language', 'en')
     
         if st.session_state.advice_generated and st.session_state.advice_content:
-        # Display results with translation
             st.success(f"🎉 {get_text('plan_ready', lang)}")
         
-        # New consultation button with translation
             if st.button(f"🔄 {get_text('new_consultation', lang)}", type="secondary"):
-            # Clear session state efficiently
                 for key in ['advice_generated', 'user_data', 'advice_content', 'processing']:
                     st.session_state[key] = False if 'generated' in key or 'processing' in key else {}
                 st.rerun()
         
-        # Display advice
             st.markdown(st.session_state.advice_content)
-        
-            add_pdf_download_button()
-        
-        # Action buttons with translations
+            add_pdf_download_button()        
             st.markdown("---")
             st.subheader(f"🎯 {get_text('take_action', lang)}")
         
@@ -768,42 +926,75 @@ def main():
                 st.markdown(f'<a href="{apy_url}" target="_blank"><button style="background:#0066CC;color:white;padding:10px;border:none;border-radius:5px;width:100%;">💰 {get_text("atal_pension", lang)}</button></a>', unsafe_allow_html=True)
     
         else:
-        # Enhanced input form with translations
             st.subheader(f"📝 {get_text('tell_about', lang)}")
-        
-        # Get translated config - IMPORTANT: Clear cache when language changes
             config = get_static_config()
-        
+
             with st.form("user_form", clear_on_submit=False):            
                 col1, col2, col3 = st.columns(3)
-            
+    
                 with col1:
                     age = st.number_input(get_text('your_age', lang), min_value=18, max_value=100, value=30)
                     job = st.selectbox(get_text('occupation', lang), config['occupations'])
                     family_size = st.selectbox(get_text('family_size', lang), config['family_sizes'])
-            
+    
                 with col2:
                     income = st.selectbox(get_text('monthly_income', lang), config['income_brackets'])
                     location = st.text_input(get_text('location', lang), placeholder=get_text('location_placeholder', lang))
                     health_condition = st.selectbox(get_text('health_status', lang), config['health_status'])
-            
+    
                 with col3:
                     financial_goal = st.selectbox(get_text('financial_goal', lang), config['financial_goals'])
-                
-                # Additional preferences
+        
                     st.write(f"**{get_text('preferences', lang)}:**")
                     risk_appetite = st.radio(f"{get_text('risk_appetite', lang)}:", config['risk_levels'], horizontal=True)
-            
-            # Submit button with translation
+    
                 submitted = st.form_submit_button(f"🚀 {get_text('get_advice', lang)}", type="primary", use_container_width=True)
         
-        # Process form submission
-            if submitted and not st.session_state.processing:
-                if not location.strip():
-                    st.error(get_text('enter_location', lang))
-                    return
-            
-            # Rest of your existing form processing code...
+                if submitted and not st.session_state.processing:
+                    if not location.strip():
+                        st.error(get_text('enter_location', lang))
+                    else:
+                        st.session_state.processing = True
+                
+                        st.session_state.user_data = {
+                            'age': age,
+                            'job': job,
+                            'income': income,
+                            'income_num': config['income_map'].get(income, 10000),
+                            'location': location,
+                            'family_size': family_size,
+                            'health_condition': health_condition,
+                            'financial_goal': financial_goal,
+                            'risk_appetite': risk_appetite
+                        }
+                        try:
+                            advice = get_cached_genai_advice(
+                                age=age,
+                                job=job, 
+                                income=config['income_map'].get(income, 10000),
+                                location=location,
+                                family_size=family_size,
+                                health_condition=health_condition,
+                                financial_goal=financial_goal
+                            )
+                    
+                            st.session_state.advice_content = advice
+                            st.session_state.advice_generated = True
+                    
+                        except Exception as e:
+                            st.error(f"Error generating advice: {str(e)}")
+                            st.session_state.advice_content = get_cached_fallback_advice(age, job, income, location)
+                            st.session_state.advice_generated = True
+                
+                        finally:
+                            st.session_state.processing = False
+                
+                        st.success("✅ Analysis complete! Your personalized insurance plan is ready.")
+                        st.rerun()
+
+            if st.session_state.processing:
+                with st.spinner(f"🤖 phi3:mini AI analyzing your profile... ({get_text('response_time', lang)})"):
+                    pass
     
     with tab2:
         premium_calculator()
@@ -815,7 +1006,6 @@ def main():
         insurance_chatbot()
     
     with tab5:
-        # Dashboard with user stats
         st.subheader("📊 Your Insurance Dashboard")
         
         if st.session_state.user_data:
@@ -832,7 +1022,6 @@ def main():
                 family = st.session_state.user_data.get('family_size', '1')
                 st.metric("Family Size", family, "Coverage needed")
             
-            # Recommendations summary
             st.write("### 📋 Quick Recommendations:")
             st.info("✅ PMSBY (₹20) - Essential accident cover")
             st.info("✅ PMJJBY (₹436) - Life insurance for family")
@@ -841,13 +1030,11 @@ def main():
         else:
             st.info("Complete the main advisor form to see your personalized dashboard!")
 
-# Installation reminder for phi3:mini
-st.sidebar.markdown("### 🔧 Setup Instructions (phi3:mini)")
-st.sidebar.code("pip install ollama streamlit")
-st.sidebar.code("ollama pull phi3:mini")
-st.sidebar.markdown("**Then run:** `streamlit run app.py`")
-st.sidebar.success("✅ phi3:mini is super fast - responses in 5-10 seconds!")
+    st.sidebar.markdown("### 🔧 Setup Instructions (phi3:mini)")
+    st.sidebar.code("pip install ollama streamlit")
+    st.sidebar.code("ollama pull phi3:mini")
+    st.sidebar.markdown("**Then run:** `streamlit run app.py`")
+    st.sidebar.success("✅ phi3:mini is super fast - responses in 5-10 seconds!")
 
-# Run the enhanced app
 if __name__ == "__main__":
     main()
