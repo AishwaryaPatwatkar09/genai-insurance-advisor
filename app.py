@@ -20,15 +20,9 @@ st.set_page_config(
 )
 
 # Replace this section in your app.py
-OLLAMA_AVAILABLE = False
 try:
     import ollama
-    # Test if ollama is actually running
-    try:
-        ollama.list()  # This will fail if ollama server isn't running
-        OLLAMA_AVAILABLE = True
-    except:
-        OLLAMA_AVAILABLE = False
+    OLLAMA_AVAILABLE = True
 except ImportError:
     OLLAMA_AVAILABLE = False
 
