@@ -19,7 +19,6 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Replace this section in your app.py
 try:
     import ollama
     OLLAMA_AVAILABLE = True
