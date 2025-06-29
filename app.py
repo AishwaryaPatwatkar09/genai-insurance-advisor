@@ -12,10 +12,6 @@ import io
 import os
 import requests
 
-IS_CLOUD_ENV = os.getenv("IS_CLOUD", "true").lower() == "true"
-OLLAMA_AVAILABLE = False if IS_CLOUD_ENV else True
-
-
 st.set_page_config(
     page_title="GenAI Insurance Advisor", 
     page_icon="🛡️", 
@@ -23,10 +19,15 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-try:
-    import ollama
-    OLLAMA_AVAILABLE = True
-except ImportError:
+IS_CLOUD_ENV = os.getenv("IS_CLOUD", "true").lower() == "true"
+
+if not IS_CLOUD_ENV:
+    try:
+        import ollama
+        OLLAMA_AVAILABLE = True
+    except ImportError:
+        OLLAMA_AVAILABLE = False
+else:
     OLLAMA_AVAILABLE = False
 
 def get_free_ai_response(prompt, max_retries=3):
