@@ -19,9 +19,16 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# Replace this section in your app.py
+OLLAMA_AVAILABLE = False
 try:
     import ollama
-    OLLAMA_AVAILABLE = True
+    # Test if ollama is actually running
+    try:
+        ollama.list()  # This will fail if ollama server isn't running
+        OLLAMA_AVAILABLE = True
+    except:
+        OLLAMA_AVAILABLE = False
 except ImportError:
     OLLAMA_AVAILABLE = False
 
