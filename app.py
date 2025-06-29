@@ -19,16 +19,12 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-IS_CLOUD_ENV = os.getenv("IS_CLOUD", "true").lower() == "true"
-
-if not IS_CLOUD_ENV:
-    try:
-        import ollama
-        OLLAMA_AVAILABLE = True
-    except ImportError:
-        OLLAMA_AVAILABLE = False
-else:
+try:
+    import ollama
+    OLLAMA_AVAILABLE = True
+except ImportError:
     OLLAMA_AVAILABLE = False
+
 
 def get_free_ai_response(prompt, max_retries=3):
     """Use Hugging Face's free inference API"""
