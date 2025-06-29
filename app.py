@@ -850,41 +850,53 @@ def main():
         st.session_state.chat_history = []
     if 'selected_language' not in st.session_state:
         st.session_state.selected_language = 'en'
-        lang = st.session_state.get('selected_language', 'en')
-        col1, col2 = st.columns([4, 1])
-    with col1:
-        st.markdown(f"# {get_text('title', lang)}")
-        st.markdown(f"*{get_text('subtitle', lang)}*")
-    with col2:
-        selected_lang = st.selectbox(
-            "🌍",
-            options=list(LANGUAGES.keys()),
-            format_func=lambda x: LANGUAGES[x],
-            key="language_selector",
-            index=list(LANGUAGES.keys()).index(st.session_state.get('selected_language', 'en'))
-        )
         
-        if selected_lang != st.session_state.get('selected_language', 'en'):
-            st.session_state.selected_language = selected_lang
-            clear_language_cache()  # Clear cache when language changes
-            st.rerun()
+    lang = st.session_state.get('selected_language', 'en')
+
+    col1, col2 = st.columns([4, 1])
+    with col1:
+            st.markdown(f"# {get_text('title', lang)}")
+            st.markdown(f"*{get_text('subtitle', lang)}*")
+    with col2:
+            selected_lang = st.selectbox(
+                "🌍",
+                options=list(LANGUAGES.keys()),
+                format_func=lambda x: LANGUAGES[x],
+                key="language_selector",
+                index=list(LANGUAGES.keys()).index(st.session_state.get('selected_language', 'en'))
+            )
+        
+            if selected_lang != st.session_state.get('selected_language', 'en'):
+                st.session_state.selected_language = selected_lang
+                clear_language_cache()  # Clear cache when language changes
+                st.rerun()
             
     if OLLAMA_AVAILABLE:
-        st.success(f"✅ {get_text('ai_ready', lang)}")
+            st.success(f"✅ {get_text('ai_ready', lang)}")
     else:
-        st.warning("⚠️ Using Smart Recommendations (Install Ollama + phi3:mini for full AI features)")
+            st.warning("⚠️ Using Smart Recommendations (Install Ollama + phi3:mini for full AI features)")
     
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
-        st.metric(get_text('gov_schemes', lang), "10+", "Available")
+        # Use safer approach with fallback
+        gov_schemes_text = get_text('gov_schemes', lang) if 'gov_schemes' in TRANSLATIONS.get(lang, {}) else "Gov Schemes"
+        st.metric(gov_schemes_text, "10+", "Available")
+    
     with col2:
-        st.metric(get_text('min_cost', lang), "₹20", get_text('per_year', lang))
+        min_cost_text = get_text('min_cost', lang) if 'min_cost' in TRANSLATIONS.get(lang, {}) else "Min Cost"
+        st.metric(min_cost_text, "₹20", get_text('per_year', lang))
+    
     with col3:
-        st.metric(get_text('max_coverage', lang), "₹5L", get_text('health_free', lang))
+        max_coverage_text = get_text('max_coverage', lang) if 'max_coverage' in TRANSLATIONS.get(lang, {}) else "Max Coverage"
+        health_free_text = get_text('health_free', lang) if 'health_free' in TRANSLATIONS.get(lang, {}) else "Health Free"
+        st.metric(max_coverage_text, "₹5L", health_free_text)
+    
     with col4:
         st.metric("AI Model", "phi3:mini", f"⚡ Online" if OLLAMA_AVAILABLE else "Offline")
+    
     with col5:
-        st.metric(get_text('response_time', lang), "<30s", get_text('Real-time', lang))
+        response_time_text = get_text('response_time', lang) if 'response_time' in TRANSLATIONS.get(lang, {}) else "Response Time"
+        st.metric(response_time_text, "<30s", "Real-time")  
     
     tab1, tab2, tab3, tab4, tab5 = st.tabs([
         f"🏠 {get_text('main_advisor', lang)}", 
