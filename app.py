@@ -12,6 +12,10 @@ import io
 import os
 import requests
 
+IS_CLOUD_ENV = os.getenv("IS_CLOUD", "true").lower() == "true"
+OLLAMA_AVAILABLE = False if IS_CLOUD_ENV else True
+
+
 st.set_page_config(
     page_title="GenAI Insurance Advisor", 
     page_icon="🛡️", 
