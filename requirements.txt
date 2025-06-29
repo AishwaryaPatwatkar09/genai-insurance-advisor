@@ -1,2 +1,10 @@
-streamlit==1.28.0
-reportlab==4.0.4
+streamlit>=1.28.0
+ollama>=0.1.7
+reportlab>=3.6.0
+asyncio
+
+# .streamlit/config.toml
+[theme]
+primaryColor = "#FF4B4B"
+backgroundColor = "#FFFFFF"
+secondaryBackgroundColor = "#F0F2F6"

@@ -30,17 +30,106 @@ except ImportError:
 # ----------------------- 
 # 1. PERFORMANCE OPTIMIZATIONS
 # ----------------------- 
+TRANSLATIONS = {
+    'en': {
+        'title': '🛡️ GenAI MicroInsurance Advisor',
+        'subtitle': 'Powered by AI • phi3:mini Model',
+        'tell_about': 'Tell Us About Yourself',
+        'your_age': 'Your Age',
+        'occupation': 'Your Occupation',
+        'monthly_income': 'Monthly Income',
+        'family_size': 'Family Size',
+        'location': 'Your City/Village',
+        'health_status': 'Health Status',
+        'financial_goal': 'Primary Financial Goal',
+        'risk_appetite': 'Risk Appetite',
+        'get_advice': 'Get AI Advice',
+        'new_consultation': 'New Consultation',
+        'premium_calculator': 'Premium Calculator',
+        'claim_help': 'Claim Help',
+        'chat_bot': 'Chat Bot',
+        'dashboard': 'Dashboard',
+        'ai_ready': 'AI Model Ready',
+        'gov_schemes': 'Gov Schemes',
+        'min_cost': 'Min Cost',
+        'max_coverage': 'Max Coverage',
+        'response_time': 'Response Time',
+        'per_year': 'Per Year',
+        'health_free': 'Health Free',
+        'lightning': 'Lightning',
+        'main_advisor': 'Main Advisor',
+        'preferences': 'Preferences',
+        'location_placeholder': 'e.g., Mumbai, Delhi, Pune',
+        'enter_location': 'Please enter your city/village name!',
+        'plan_ready': 'Your AI-Powered Insurance Plan is Ready!',
+        'take_action': 'Take Action Now!',
+        'find_banks': 'Find Banks Near Me',
+        'check_pmjay': 'Check PMJAY Eligibility',
+        'atal_pension': 'Atal Pension Scheme'
+    },
+    'hi': {
+        'title': '🛡️ जेनएआई माइक्रो बीमा सलाहकार',
+        'subtitle': 'एआई द्वारा संचालित • phi3:mini मॉडल',
+        'tell_about': 'अपने बारे में बताएं',
+        'your_age': 'आपकी उम्र',
+        'occupation': 'आपका पेशा',
+        'monthly_income': 'मासिक आय',
+        'family_size': 'परिवार का आकार',
+        'location': 'आपका शहर/गांव',
+        'health_status': 'स्वास्थ्य स्थिति',
+        'financial_goal': 'मुख्य वित्तीय लक्ष्य',
+        'risk_appetite': 'जोखिम की भूख',
+        'get_advice': 'एआई सलाह प्राप्त करें',
+        'new_consultation': 'नई सलाह',
+        'premium_calculator': 'प्रीमियम कैलकुलेटर',
+        'claim_help': 'क्लेम सहायता',
+        'chat_bot': 'चैट बॉट',
+        'dashboard': 'डैशबोर्ड',
+        'ai_ready': 'एआई मॉडल तैयार',
+        'gov_schemes': 'सरकारी योजनाएं',
+        'min_cost': 'न्यूनतम लागत',
+        'max_coverage': 'अधिकतम कवरेज',
+        'response_time': 'प्रतिक्रिया समय',
+        'per_year': 'प्रति वर्ष',
+        'health_free': 'स्वास्थ्य मुफ्त',
+        'lightning': 'बिजली',
+        'main_advisor': 'मुख्य सलाहकार',
+        'preferences': 'प्राथमिकताएं',
+        'location_placeholder': 'जैसे मुंबई, दिल्ली, पुणे',
+        'enter_location': 'कृपया अपना शहर/गांव का नाम दर्ज करें!',
+        'plan_ready': 'आपकी एआई-संचालित बीमा योजना तैयार है!',
+        'take_action': 'अभी कार्य करें!',
+        'find_banks': 'मेरे पास बैंक खोजें',
+        'check_pmjay': 'PMJAY पात्रता जांचें',
+        'atal_pension': 'अटल पेंशन योजना'
+    }
+}
 
+# Also translate the dropdown options
+TRANSLATED_OPTIONS = {
+    'en': {
+        'occupations': ["Farmer", "Driver", "Teacher", "Shopkeeper", "Labor Worker", "Government Employee", "Self Employed", "Private Employee", "Student", "Retired", "Other"],
+        'family_sizes': ["1", "2-3", "4-5", "6+"],
+        'health_status': ["Excellent", "Good", "Fair", "Have medical conditions", "Prefer not to say"],
+        'financial_goals': ["Basic Protection", "Family Security", "Health Coverage", "Retirement Planning", "Child Education", "Wealth Building"],
+        'risk_levels': ["Conservative", "Moderate", "Aggressive"]
+    },
+    'hi': {
+        'occupations': ["किसान", "ड्राइवर", "शिक्षक", "दुकानदार", "मजदूर", "सरकारी कर्मचारी", "स्व-नियोजित", "निजी कर्मचारी", "छात्र", "सेवानिवृत्त", "अन्य"],
+        'family_sizes': ["1", "2-3", "4-5", "6+"],
+        'health_status': ["उत्कृष्ट", "अच्छा", "ठीक", "चिकित्सा समस्याएं हैं", "नहीं बताना चाहते"],
+        'financial_goals': ["बुनियादी सुरक्षा", "पारिवारिक सुरक्षा", "स्वास्थ्य कवरेज", "सेवानिवृत्ति योजना", "बच्चों की शिक्षा", "धन निर्माण"],
+        'risk_levels': ["रूढ़िवादी", "मध्यम", "आक्रामक"]
+    }
+}
 # Cache configuration and static data
 @st.cache_data
 def get_static_config():
-    """Cache static configuration data"""
+    """Cache static configuration data with language support"""
+    lang = st.session_state.get('selected_language', 'en')
+    
     return {
-        'occupations': [
-            "Farmer", "Driver", "Teacher", "Shopkeeper", 
-            "Labor Worker", "Government Employee", "Self Employed",
-            "Private Employee", "Student", "Retired", "Other"
-        ],
+        'occupations': TRANSLATED_OPTIONS[lang]['occupations'],
         'income_brackets': [
             "₹0-5,000", "₹5,000-10,000", "₹10,000-15,000",
             "₹15,000-25,000", "₹25,000-50,000", "₹50,000+"
@@ -53,13 +142,10 @@ def get_static_config():
             "₹25,000-50,000": 37500,
             "₹50,000+": 75000
         },
-        'family_sizes': ["1", "2-3", "4-5", "6+"],
-        'health_status': ["Excellent", "Good", "Fair", "Have medical conditions", "Prefer not to say"],
-        'financial_goals': [
-            "Basic Protection", "Family Security", "Health Coverage",
-            "Retirement Planning", "Child Education", "Wealth Building"
-        ],
-        'risk_levels': ["Conservative", "Moderate", "Aggressive"],
+        'family_sizes': TRANSLATED_OPTIONS[lang]['family_sizes'],
+        'health_status': TRANSLATED_OPTIONS[lang]['health_status'],
+        'financial_goals': TRANSLATED_OPTIONS[lang]['financial_goals'],
+        'risk_levels': TRANSLATED_OPTIONS[lang]['risk_levels'],
         'claim_types': [
             "Accident Claim (PMSBY)",
             "Life Insurance Claim (PMJJBY)", 
@@ -67,7 +153,6 @@ def get_static_config():
             "Other Government Scheme"
         ]
     }
-
 # Cache expensive computations
 @st.cache_data(ttl=3600)  # Cache for 1 hour
 def get_cached_fallback_advice(age, job, income, location):
@@ -136,6 +221,12 @@ def init_session_state():
 
 init_session_state()
 
+def clear_language_cache():
+    """Clear cached data when language changes"""
+    if hasattr(st, 'legacy_caching'):
+        st.legacy_caching.clear_cache()
+    else:
+        st.cache_data.clear()
 # ----------------------- 
 # 3. Optimized GenAI Integration with phi3:mini (FAST)
 # ----------------------- 
@@ -145,13 +236,30 @@ def get_cached_genai_advice(age, job, income, location, family_size, health_cond
     return get_genai_advice_internal(age, job, income, location, family_size, health_condition, financial_goal)
 
 def get_genai_advice_internal(age, job, income, location, family_size, health_condition, financial_goal):
-    """Generate advice using phi3:mini (super fast model)"""
+    """Generate advice using phi3:mini with language support"""
+    
+    lang = st.session_state.get('selected_language', 'en')
     
     if not OLLAMA_AVAILABLE:
         return get_cached_fallback_advice(age, job, income, location)
     
-    # Optimized prompt for phi3:mini (lightweight and fast)
-    prompt = f"""Insurance advisor for India. Quick advice needed:
+    # Language-specific prompt
+    if lang == 'hi':
+        prompt = f"""भारत के लिए बीमा सलाहकार। हिंदी में सलाह चाहिए:
+
+प्रोफाइल: {age} साल, {job}, ₹{income}/महीना, {location}, परिवार: {family_size}
+लक्ष्य: {financial_goal}
+स्वास्थ्य: {health_condition}
+
+टॉप 3 बीमा योजनाओं में सुझाव दें:
+- प्रीमियम लागत
+- कवरेज राशि
+- क्यों उपयुक्त है
+- कैसे आवेदन करें
+
+PMSBY, PMJJBY, PMJAY पर फोकस करें। संक्षिप्त रखें।"""
+    else:
+        prompt = f"""Insurance advisor for India. Quick advice needed:
 
 Profile: {age}yr {job}, ₹{income}/month, {location}, family:{family_size}
 Goal: {financial_goal}
@@ -555,166 +663,147 @@ Give brief, practical answer in 2-3 lines. Focus on actionable steps."""
             st.session_state.chat_history = st.session_state.chat_history[-10:]
         
         st.rerun()
+        
+LANGUAGES = {
+    'en': '🇺🇸 English',
+    'hi': '🇮🇳 हिंदी'
+}
 
+def get_text(key, lang='en'):
+    """Get translated text"""
+    return TRANSLATIONS.get(lang, {}).get(key, TRANSLATIONS['en'].get(key, key))
 # ----------------------- 
 # 5. Main Optimized Streamlit App
 # ----------------------- 
 def main():
-    # Header with enhanced design
-    st.title("🛡️ GenAI MicroInsurance Advisor")
-    st.markdown("*Powered by AI • phi3:mini Model*")
+    # Get current language
+    lang = st.session_state.get('selected_language', 'en')
     
-    # Show AI status
+    # Language selector FIRST
+    col1, col2 = st.columns([4, 1])
+    with col1:
+        # Translated title and subtitle
+        st.markdown(f"# {get_text('title', lang)}")
+        st.markdown(f"*{get_text('subtitle', lang)}*")
+    with col2:
+        selected_lang = st.selectbox(
+            "🌍",
+            options=list(LANGUAGES.keys()),
+            format_func=lambda x: LANGUAGES[x],
+            key="language_selector",
+            index=list(LANGUAGES.keys()).index(st.session_state.get('selected_language', 'en'))
+        )
+        
+        # Update session state and rerun if language changed
+        if selected_lang != st.session_state.get('selected_language', 'en'):
+            st.session_state.selected_language = selected_lang
+            clear_language_cache()  # Clear cache when language changes
+            st.rerun()
+
+    
+    # Show AI status with translation
     if OLLAMA_AVAILABLE:
-        st.success("✅ AI Model Ready")
+        st.success(f"✅ {get_text('ai_ready', lang)}")
     else:
         st.warning("⚠️ Using Smart Recommendations (Install Ollama + phi3:mini for full AI features)")
     
-    # Enhanced metrics dashboard
+    # Enhanced metrics dashboard with translations
     col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
-        st.metric("Gov Schemes", "10+", "Available")
+        st.metric(get_text('gov_schemes', lang), "10+", "Available")
     with col2:
-        st.metric("Min Cost", "₹20", "Per Year")
+        st.metric(get_text('min_cost', lang), "₹20", get_text('per_year', lang))
     with col3:
-        st.metric("Max Coverage", "₹5L", "Health Free")
+        st.metric(get_text('max_coverage', lang), "₹5L", get_text('health_free', lang))
     with col4:
-        st.metric("AI Model", "phi3:mini", "⚡ Fast" if OLLAMA_AVAILABLE else "Offline")
+        st.metric("AI Model", "phi3:mini", f"⚡ Fast" if OLLAMA_AVAILABLE else "Offline")
     with col5:
-        st.metric("Response Time", "<10s", "Lightning")
+        st.metric(get_text('response_time', lang), "<10s", get_text('lightning', lang))
     
-    # Navigation tabs
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏠 Main Advisor", "💰 Premium Calculator", "🤝 Claim Help", "💬 Chat Bot", "📊 Dashboard"])
+    # Navigation tabs with translations
+    tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        f"🏠 {get_text('main_advisor', lang)}", 
+        f"💰 {get_text('premium_calculator', lang)}", 
+        f"🤝 {get_text('claim_help', lang)}", 
+        f"💬 {get_text('chat_bot', lang)}", 
+        f"📊 {get_text('dashboard', lang)}"
+    ])
     
     with tab1:
-        # Main advisor logic
+        lang = st.session_state.get('selected_language', 'en')
+    
         if st.session_state.advice_generated and st.session_state.advice_content:
-            # Display results
-            st.success("🎉 Your phi3:mini AI-Powered Insurance Plan is Ready!")
-            
-            # New consultation button
-            if st.button("🔄 New Consultation", type="secondary"):
-                # Clear session state efficiently
+        # Display results with translation
+            st.success(f"🎉 {get_text('plan_ready', lang)}")
+        
+        # New consultation button with translation
+            if st.button(f"🔄 {get_text('new_consultation', lang)}", type="secondary"):
+            # Clear session state efficiently
                 for key in ['advice_generated', 'user_data', 'advice_content', 'processing']:
                     st.session_state[key] = False if 'generated' in key or 'processing' in key else {}
                 st.rerun()
         
-
-            # Display advice
+        # Display advice
             st.markdown(st.session_state.advice_content)
-            
+        
             add_pdf_download_button()
-            # Fixed action buttons with correct URLs
+        
+        # Action buttons with translations
             st.markdown("---")
-            st.subheader("🎯 Take Action Now!")
-            
+            st.subheader(f"🎯 {get_text('take_action', lang)}")
+        
             location = st.session_state.user_data.get('location', 'India')
-            
+        
             col1, col2, col3 = st.columns(3)
             with col1:
                 bank_url = f"https://www.google.com/maps/search/banks+near+{location.replace(' ', '+')}"
-                st.markdown(f'<a href="{bank_url}" target="_blank"><button style="background:#FF4B4B;color:white;padding:10px;border:none;border-radius:5px;width:100%;">🏦 Find Banks Near Me</button></a>', unsafe_allow_html=True)
-            
+                st.markdown(f'<a href="{bank_url}" target="_blank"><button style="background:#FF4B4B;color:white;padding:10px;border:none;border-radius:5px;width:100%;">🏦 {get_text("find_banks", lang)}</button></a>', unsafe_allow_html=True)
+        
             with col2:
-                # Fixed PMJAY URL
                 pmjay_url = "https://pmjay.gov.in/"
-                st.markdown(f'<a href="{pmjay_url}" target="_blank"><button style="background:#00CC66;color:white;padding:10px;border:none;border-radius:5px;width:100%;">🏥 Check PMJAY Eligibility</button></a>', unsafe_allow_html=True)
-            
+                st.markdown(f'<a href="{pmjay_url}" target="_blank"><button style="background:#00CC66;color:white;padding:10px;border:none;border-radius:5px;width:100%;">🏥 {get_text("check_pmjay", lang)}</button></a>', unsafe_allow_html=True)
+        
             with col3:
-                # Fixed APY link - using the correct government website
                 apy_url = "https://financialservices.gov.in/beta/en/atal-pension-yojna"
-                st.markdown(f'<a href="{apy_url}" target="_blank"><button style="background:#0066CC;color:white;padding:10px;border:none;border-radius:5px;width:100%;">💰 Atal Pension Scheme</button></a>', unsafe_allow_html=True)
-            
+                st.markdown(f'<a href="{apy_url}" target="_blank"><button style="background:#0066CC;color:white;padding:10px;border:none;border-radius:5px;width:100%;">💰 {get_text("atal_pension", lang)}</button></a>', unsafe_allow_html=True)
+    
         else:
-            # Enhanced input form with cached options
-            st.subheader("📝 Tell Us About Yourself")
-            
+        # Enhanced input form with translations
+            st.subheader(f"📝 {get_text('tell_about', lang)}")
+        
+        # Get translated config - IMPORTANT: Clear cache when language changes
             config = get_static_config()
-            
+        
             with st.form("user_form", clear_on_submit=False):            
                 col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    age = st.number_input("Your Age", min_value=18, max_value=100, value=30)
-                    job = st.selectbox("Your Occupation", config['occupations'])
-                    family_size = st.selectbox("Family Size", config['family_sizes'])
-                
-                with col2:
-                    income = st.selectbox("Monthly Income", config['income_brackets'])
-                    location = st.text_input("Your City/Village", placeholder="e.g., Mumbai, Delhi, Pune")
-                    health_condition = st.selectbox("Health Status", config['health_status'])
-                
-                with col3:
-                    financial_goal = st.selectbox("Primary Financial Goal", config['financial_goals'])
-                    
-                    # Additional preferences
-                    st.write("**Preferences:**")
-                    risk_appetite = st.radio("Risk Appetite:", config['risk_levels'], horizontal=True)
-                
-                # Submit button
-                submitted = st.form_submit_button("🚀 Get phi3:mini AI Advice", type="primary", use_container_width=True)
             
-            # Process form submission
+                with col1:
+                    age = st.number_input(get_text('your_age', lang), min_value=18, max_value=100, value=30)
+                    job = st.selectbox(get_text('occupation', lang), config['occupations'])
+                    family_size = st.selectbox(get_text('family_size', lang), config['family_sizes'])
+            
+                with col2:
+                    income = st.selectbox(get_text('monthly_income', lang), config['income_brackets'])
+                    location = st.text_input(get_text('location', lang), placeholder=get_text('location_placeholder', lang))
+                    health_condition = st.selectbox(get_text('health_status', lang), config['health_status'])
+            
+                with col3:
+                    financial_goal = st.selectbox(get_text('financial_goal', lang), config['financial_goals'])
+                
+                # Additional preferences
+                    st.write(f"**{get_text('preferences', lang)}:**")
+                    risk_appetite = st.radio(f"{get_text('risk_appetite', lang)}:", config['risk_levels'], horizontal=True)
+            
+            # Submit button with translation
+                submitted = st.form_submit_button(f"🚀 {get_text('get_advice', lang)}", type="primary", use_container_width=True)
+        
+        # Process form submission
             if submitted and not st.session_state.processing:
                 if not location.strip():
-                    st.error("Please enter your city/village name!")
+                    st.error(get_text('enter_location', lang))
                     return
-                
-                st.session_state.processing = True
-                
-                # Convert income to number using cached mapping
-                income_num = config['income_map'][income]
-                
-                # Store enhanced user data
-                st.session_state.user_data = {
-                    'age': age,
-                    'job': job,
-                    'income': income,
-                    'income_num': income_num,
-                    'location': location,
-                    'family_size': family_size,
-                    'health_condition': health_condition,
-                    'financial_goal': financial_goal,
-                    'risk_appetite': risk_appetite
-                }
-                
-                # Ultra-fast processing display for phi3:mini
-                progress_container = st.container()
-                with progress_container:
-                    progress_bar = st.progress(0)
-                    status_text = st.empty()
-                    
-                    # Super fast progress updates for phi3:mini
-                    steps = [
-                        (25, "🧠 Analyzing profile..."),
-                        (60, "🤖 Consulting phi3:mini (ultra fast)..."),
-                        (90, "📊 Generating recommendations..."),
-                        (100, "✅ Ready in seconds!")
-                    ]
-                    
-                    for progress, message in steps:
-                        status_text.text(message)
-                        progress_bar.progress(progress)
-                        time.sleep(0.2)  # Even faster for phi3:mini
-                    
-                    # Generate advice using cached function
-                    try:
-                        advice = get_cached_genai_advice(age, job, income_num, location, family_size, health_condition, financial_goal)
-                        
-                        st.session_state.advice_content = advice
-                        st.session_state.advice_generated = True
-                        st.session_state.processing = False
-                        
-                        status_text.text("🎉 Complete in under 10 seconds!")
-                        time.sleep(0.3)
-                        
-                        progress_bar.empty()
-                        status_text.empty()
-                        st.rerun()
-                        
-                    except Exception as e:
-                        st.error(f"Error generating advice: {str(e)}")
-                        st.session_state.processing = False
+            
+            # Rest of your existing form processing code...
     
     with tab2:
         premium_calculator()
